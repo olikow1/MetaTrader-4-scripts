@@ -1,0 +1,54 @@
+import ibapi
+import random
+from ibapi.client import EClient
+from ibapi.wrapper import EWrapper
+
+class TradingEngine(EClient, EWrapper):
+    def __init__(self):
+        EClient.__init__(self, self)
+
+    def placeOrder(self, action, quantity, price, pov):
+        """
+        place an order with the specified parameters
+        
+        action: str, the action to take ("BUY" or "SELL")
+        quantity: int, the number of shares to buy or sell
+        price: float, the price per share
+        pov: float, the percentage of volume (POV) for the order
+        """
+        ### creating a contract object representing the stock to trade
+        contract = ibapi.contract.Contract()
+        contract.symbol = "AAPL"
+        contract.secType = "STK"
+        contract.exchange = "SMART"
+        contract.currency = "USD"
+
+        ### creating an order object with the specified parameters
+        order = ibapi.order.Order()
+        order.action = action
+        order.orderType = "LMT"
+        order.totalQuantity = quantity
+        order.lmtPrice = price
+        # Set the percentage of volume (POV)
+        order.pctVol = pov
+
+        ### placing the order
+        self.placeOrder(self.nextOrderId(), contract, order)
+
+    def handleSlippage(self, orderId, slipage):
+        """
+        modify an existing order to include the specified slippage value
+        
+        orderId: int, the ID of the order to modify
+        slipage: float, the slippage value to add to the order
+        """
+        ### adding some random slippage to the order
+        slipage += random.uniform(-0.01, 0.01)
+        ### modifing the order with the updated slippage value
+        self.placeOrder(orderId, slipage=slipage)
+
+def main():
+    app = TradingEngine()
+
+
+
